@@ -1,6 +1,6 @@
 const PdfViewer = ({ filename }) => {
     return (
-        <div>
+        <div style={{ width: '95vw', height: '120vh' }}>
             <h3>Viewing: {filename}</h3>
             <iframe
                 title="PDF Viewer"

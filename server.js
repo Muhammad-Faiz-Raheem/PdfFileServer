@@ -92,4 +92,46 @@ app.get("/file/:filename", async (req, res) => {
     }
 });
 
+// **Delete File from Storage and Database**
+const { ObjectId } = require("mongodb"); // Import ObjectId
+
+app.delete("/file/:filename", async (req, res) => {
+    try {
+        // Find file metadata from MongoDB
+        const file = await File.findOne({ filename: req.params.filename });
+        if (!file) return res.status(404).json({ error: "File not found in DB" });
+
+        const fileId = file.fileId;
+
+        // Ensure GridFS is using the correct bucket
+        // const gfsUploads = new GridFSBucket(conn.db, { bucketName: "uploads" });
+
+        console.log("Attempting to delete file with ID:", fileId);
+        console.log("Attempting to delete file with Name:", file.filename);
+
+        // Delete file from GridFS
+        gfs.delete(fileId, (err) => {
+            if (err) {
+                console.error("Error deleting file from GridFS:", err);
+                return res.status(500).json({ error: "Error deleting file from GridFS", details: err });
+            }
+        });
+
+        // Delete file metadata from MongoDB        
+        const result = await File.deleteOne({ fileId });
+        console.log(`Delete result:`, result); // Log deletion result
+        // await File.deleteOne({ fileId: fileId });
+        res.json({ message: "File deleted successfully" });
+
+    } catch (error) {
+        res.status(500).json({ error: "Error deleting file", details: error.message });
+    }
+});
+
+app.use((req, res, next) => {
+    res.send("Server is running");
+    console.log("Server is running");
+    next();
+});
+
 app.listen(port, () => console.log(`Server running on port ${port}`));
